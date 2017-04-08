@@ -2,6 +2,7 @@ package com.phyl;
 
 import com.sun.org.apache.xpath.internal.SourceTree;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -58,10 +59,15 @@ public class UserController {
         userList.forEach(System.out::println);
 
         User one = mongoTemplate.findOne(query, User.class);//单个结果查询操作
-        System.out.println("查询单个User："+one.toString());
-        Update update = new Update().set("age", 22);
-        User modify = mongoTemplate.findAndModify(query, update, User.class);//查询name是sher并修改age为33
-        System.out.println("更新的User:" + modify);
+        System.out.println("查询单个User：" + one.toString());
+        Update update = new Update().set("age", 24);
+        User modify = mongoTemplate.findAndModify(query, update, User.class);//数据库更新了但是返回的是旧的对象
+        System.out.println("返回更新前对象:" + modify);
+        Update update2 = new Update().set("age", 26);
+        //upsert(true),update和insert结合体默认为false,当它为true的时候，update方法会首先查找与第一个参数匹配的记录，在用第二个参数更新之，如果找不到与第一个参数匹配的的记录，就插入一条
+        FindAndModifyOptions upsert = new FindAndModifyOptions().returnNew(true).upsert(true);
+        User andModify = mongoTemplate.findAndModify(query, update2, upsert, User.class);//返回更新后对象
+        System.out.println("返回更新后对象" + andModify);
 //        mongoTemplate.updateFirst(query, update, User.class);//进行第一条符合要求的数据更新
 //        mongoTemplate.updateMulti(query, update, User.class);//进行更新多行数据
 //        mongoTemplate.remove(user);//进行数据删除
